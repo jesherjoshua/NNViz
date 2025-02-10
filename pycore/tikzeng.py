@@ -207,5 +207,38 @@ def to_generate( arch, pathname="file.tex" ):
             print(c)
             f.write( c )
      
+# Memory Block (Task-Specific Learnable Memory)
+def to_Memory(name, s_filer=256, offset="(0,0,0)", to="(0,0,0)", width=2, height=16, depth=16, opacity=0.8, caption="Memory"):
+    return r"""
+\pic[shift={ """+ offset +""" }] at """+ to +""" 
+    {Box={
+        name="""+ name +""",
+        caption="""+ caption +""",
+        zlabel="""+ str(s_filer) +""",
+        fill={rgb:cyan,5;black,3}, % Memory blocks in cyan
+        opacity="""+ str(opacity) +""",
+        height="""+ str(height) +""",
+        width="""+ str(width) +""",
+        depth="""+ str(depth) +"""
+        }
+    };
+"""
+
+# Multi-Head Attention Block
+def to_Attention(name, s_filer=256, offset="(0,0,0)", to="(0,0,0)", width=3, height=20, depth=20, opacity=0.7, caption="Attention"):
+    return r"""
+\pic[shift={ """+ offset +""" }] at """+ to +""" 
+    {Box={
+        name="""+ name +""",
+        caption="""+ caption +""",
+        zlabel="""+ str(s_filer) +""",
+        fill={rgb:yellow,5;black,2}, % Attention blocks in yellow
+        opacity="""+ str(opacity) +""",
+        height="""+ str(height) +""",
+        width="""+ str(width) +""",
+        depth="""+ str(depth) +"""
+        }
+    };
+"""
 
 
