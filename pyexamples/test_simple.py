@@ -1,24 +1,31 @@
-
 import sys
 sys.path.append('../')
 from pycore.tikzeng import *
 
-# defined your arch
+# Define your ViT-B/16 architecture
 arch = [
     to_head( '..' ),
     to_cor(),
     to_begin(),
-    to_Conv("conv1", 512, 64, offset="(0,0,0)", to="(0,0,0)", height=64, depth=64, width=2 ),
-    to_Pool("pool1", offset="(0,0,0)", to="(conv1-east)"),
-    to_Conv("conv2", 128, 64, offset="(1,0,0)", to="(pool1-east)", height=32, depth=32, width=2 ),
-    to_connection( "pool1", "conv2"), 
-    to_Pool("pool2", offset="(0,0,0)", to="(conv2-east)", height=28, depth=28, width=1),
-    to_SoftMax("soft1", 10 ,"(3,0,0)", "(pool1-east)", caption="SOFT"  ),
-    to_connection("pool2", "soft1"),    
-    to_Sum("sum1", offset="(1.5,0,0)", to="(soft1-east)", radius=2.5, opacity=0.6),
-    to_connection("soft1", "sum1"),
+    
+    # Patch Embedding Layer
+    to_Conv("conv1", 768, 16, offset="(0,0,0)", to="(0,0,0)", height=16, depth=16, width=2),  # Patch Embedding
+    to_Pool("pool1", offset="(0,0,0)", to="(conv1-east)", height=14, depth=14, width=1),  # Simulating Pooling
+
+    # Transformer Blocks (simplified)
+    to_Conv("conv2", 768, 32, offset="(1,0,0)", to="(pool1-east)", height=14, depth=14, width=2),  # Self-attention layer
+    to_Pool("pool2", offset="(0,0,0)", to="(conv2-east)", height=12, depth=12, width=1),  # Pooling layer
+    
+    to_Conv("conv3", 768, 64, offset="(1,0,0)", to="(pool2-east)", height=12, depth=12, width=2),  # Feed-forward layer
+    to_Pool("pool3", offset="(0,0,0)", to="(conv3-east)", height=10, depth=10, width=1),  # Pooling layer
+    
+    # Classification head
+    to_SoftMax("softmax", 1000, "(3,0,0)", "(pool3-east)", caption="SOFTMAX"),  # Final classification layer
+
+    to_connection("pool3", "softmax"),  # Connect last layer to the softmax layer
+    
     to_end()
-    ]
+]
 
 def main():
     namefile = str(sys.argv[0]).split('.')[0]
