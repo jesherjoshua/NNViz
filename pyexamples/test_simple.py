@@ -2,30 +2,31 @@ import sys
 sys.path.append('../')
 from pycore.tikzeng import *
 
-# Define the MemoryTaskSelector Architecture
+# Define the Adapter Architecture
 arch = [
     to_head('..'),
     to_cor(),
     to_begin(),
 
-    # 🔹 Memory Embeddings Block
-    to_Memory("memory", s_filer=768, offset="(0,0,0)", to="(0,0,0)", caption="Memory Embeddings"),
+    # 🔹 Layer Normalization (Optional Pre-Norm)
+    to_Conv("layer_norm", 768, 16, offset="(0,0,0)", to="(0,0,0)", height=14, depth=14, width=2, caption="Layer Norm"),
 
-    # 🔹 Multi-Head Attention Block
-    to_Attention("attention", s_filer=768, offset="(1.5,0,0)", to="(memory-east)", caption="Multi-Head Attention"),
-    to_connection("memory", "attention"),
+    # 🔹 Down Projection (Bottleneck)
+    to_Conv("down_proj", 256, 32, offset="(1.5,0,0)", to="(layer_norm-east)", height=12, depth=12, width=2, caption="Down Projection"),
+    to_connection("layer_norm", "down_proj"),
 
-    # 🔹 Task Selector Network (MLP)
-    to_Conv("fc1", 128, 32, offset="(1.5,0,0)", to="(attention-east)", height=12, depth=12, width=2, caption="MLP Layer 1"),
-    to_connection("attention", "fc1"),
+    # 🔹 Multi-Head Attention
+    to_Attention("attention", s_filer=256, offset="(1.5,0,0)", to="(down_proj-east)", caption="Multi-Head Attention"),
+    to_connection("down_proj", "attention"),
 
-    to_Conv("fc2", 128, 32, offset="(1.5,0,0)", to="(fc1-east)", height=10, depth=10, width=2, caption="MLP Layer 2"),
-    to_connection("fc1", "fc2"),
+    # 🔹 Up Projection (Restoring Dimensionality)
+    to_Conv("up_proj", 768, 32, offset="(1.5,0,0)", to="(attention-east)", height=12, depth=12, width=2, caption="Up Projection"),
+    to_connection("attention", "up_proj"),
 
-    # 🔹 Output: Task Probability Distribution
-    to_SoftMax("softmax", 10, "(2,0,0)", "(fc2-east)", caption="Task Probabilities"),
-    to_connection("fc2", "softmax"),
-
+    # 🔹 Residual Connection
+    to_Sum("residual", offset="(1.5,0,0)", to="(up_proj-east)", radius=1.5, opacity=0.6),
+    to_connection("up_proj", "residual"),
+    
     to_end()
 ]
 
